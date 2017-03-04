@@ -7,3 +7,13 @@
 //
 
 import Foundation
+import RealmSwift
+
+class Location: Object{
+    dynamic var city = ""
+    dynamic var latitude = ""
+    dynamic var longitude = ""
+    dynamic var date = ""
+    
+
+}
