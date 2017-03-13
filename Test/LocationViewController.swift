@@ -8,18 +8,22 @@
 import UIKit
 import CoreLocation
 import RealmSwift
+import MapKit
 
-class LocationViewController: UIViewController, CLLocationManagerDelegate  {
+class LocationViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate  {
 
     @IBOutlet weak var latitudeField: UITextField!
     @IBOutlet weak var longitudeField: UITextField!
     @IBOutlet weak var locationField: UITextView!
+    @IBOutlet weak var mapView: MKMapView!
     
     let locationManager = CLLocationManager()
     
     var longitude: String?
     var cityName: String?
     var latitude: String?
+    let regionRadius: CLLocationDistance = 1000
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,6 +35,8 @@ class LocationViewController: UIViewController, CLLocationManagerDelegate  {
             locationManager.requestLocation()
         }
 
+        mapView.delegate = self
+        mapView.showsUserLocation = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -40,7 +46,12 @@ class LocationViewController: UIViewController, CLLocationManagerDelegate  {
             longitudeField.text = longitude
             latitudeField.text = latitude
         }
-        
+    }
+    
+    func centerMapOnLocation(location: CLLocation) {
+        let coordinateRegion = MKCoordinateRegionMakeWithDistance(location.coordinate,
+                                                                  regionRadius * 2.0, regionRadius * 2.0)
+        mapView.setRegion(coordinateRegion, animated: true)
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -61,6 +72,7 @@ class LocationViewController: UIViewController, CLLocationManagerDelegate  {
     
     func parseLocation(locations: [CLLocation]) {
         for locate in locations{
+            centerMapOnLocation(location: locate)
             latitudeField.text = String(format: "%f", locate.coordinate.latitude)
             longitudeField.text = String(format: "%f", locate.coordinate.longitude)
             self.addNewLocation(date: locate.timestamp)
@@ -75,7 +87,7 @@ class LocationViewController: UIViewController, CLLocationManagerDelegate  {
     func addNewLocation(date: Date){
         var cityName = self.locationField.text!.components(separatedBy: ",")
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        dateFormatter.dateFormat = "HH:mm:ss dd-MM-yyyy"
         let DateInFormat = dateFormatter.string(from: date)
         let realm = try! Realm()
         try! realm.write {

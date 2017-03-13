@@ -14,6 +14,8 @@ class HistoryViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     @IBOutlet weak var tableView: UITableView!
     
+    var lastOffsetY :CGFloat = 0
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,21 +26,21 @@ class HistoryViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let realm = try! Realm()
-        let locate = realm.objects(Location.self)
+        let location = realm.objects(Location.self)
         
-        return locate.count
+        return location.count
         
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! HistoryTableViewCell
         let realm = try! Realm()
-        let locate = realm.objects(Location.self)
+        let location = realm.objects(Location.self)
         
-        cell.cityNameLavel?.text = locate[indexPath.row].city
-        cell.longitudeLabel?.text = locate[indexPath.row].longitude
-        cell.latitudeLabel?.text = locate[indexPath.row].latitude
-        cell.dateLabel?.text =  locate[indexPath.row].date
+        cell.cityNameLavel?.text = location[indexPath.row].city
+        cell.longitudeLabel?.text = location[indexPath.row].longitude
+        cell.latitudeLabel?.text = location[indexPath.row].latitude
+        cell.dateLabel?.text =  location[indexPath.row].date
 
         return cell
     }
@@ -47,23 +49,16 @@ class HistoryViewController: UIViewController, UITableViewDelegate, UITableViewD
         changeTabBar(hidden: false, animated: true)
 
         let realm = try! Realm()
-        let locate = realm.objects(Location.self)
+        let location = realm.objects(Location.self)
         
         let barViewControllers = self.tabBarController?.viewControllers
-        let comeBack = barViewControllers![0] as! LocationViewController
+        let locationController = barViewControllers![0] as! LocationViewController
         
-        comeBack.cityName = locate[indexPath.row].city
-        comeBack.latitude = locate[indexPath.row].latitude
-        comeBack.longitude = locate[indexPath.row].longitude
+        locationController.cityName = location[indexPath.row].city
+        locationController.latitude = location[indexPath.row].latitude
+        locationController.longitude = location[indexPath.row].longitude
         
         tabBarController?.selectedIndex = 0
-        
-//        var tabIndex = 0
-//        
-//        if let vc = self.tabBarController?.viewControllers?[tabIndex] as? LocationViewController {
-//            vc.latitude = "vv"
-//        }
-//        self.tabBarController?.selectedIndex = tabIndex
         
         tableView.deselectRow(at: indexPath as IndexPath, animated: true)
         
@@ -88,14 +83,19 @@ class HistoryViewController: UIViewController, UITableViewDelegate, UITableViewD
         return [deleteAction]
     }
     
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView){
+        lastOffsetY = scrollView.contentOffset.y
+    }
     
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        if scrollView.panGestureRecognizer.translation(in: scrollView).y < 0{
+    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView){
+        if scrollView.contentOffset.y > self.lastOffsetY{
             changeTabBar(hidden: true, animated: true)
-        }
-        else{
+
+        }else{
             changeTabBar(hidden: false, animated: true)
+
         }
+        
     }
     
     func changeTabBar(hidden:Bool, animated: Bool){
@@ -108,26 +108,11 @@ class HistoryViewController: UIViewController, UITableViewDelegate, UITableViewD
         if frame != nil
         {
             UIView.animate(withDuration: duration,
-                                       animations: {tabBar!.frame = frame!.offsetBy(dx: 0, dy: offset)},
-                                       completion: {
-                                        print($0)
-                                        if $0 {tabBar?.isHidden = hidden}
+                           animations: {tabBar!.frame = frame!.offsetBy(dx: 0, dy: offset)},
+                           completion: { if $0 {tabBar?.isHidden = hidden}
             })
         }
     }
-
-
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        let realm = try! Realm()
-//        let locate = realm.objects(Location.self)
-//        
-//        if segue.identifier == "LocateSegue" {
-//            if let comeBack = segue.destination as? LocationViewController {
-//                comeBack.cityName = locate[selectionCell].city
-//                comeBack.latitude = locate[selectionCell].latitude
-//                comeBack.longitude = locate[selectionCell].longitude
-//            }
-//        }
-//    }
-    
 }
+
+

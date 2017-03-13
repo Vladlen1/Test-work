@@ -8,12 +8,15 @@
 
 import Foundation
 import RealmSwift
+import CoreLocation
+
 
 class Location: Object{
     dynamic var city = ""
     dynamic var latitude = ""
     dynamic var longitude = ""
     dynamic var date = ""
+//    dynamic var location:CLLocation?
     
 
 }
